@@ -15,15 +15,6 @@ var pool = mysql.createPool({
 var iochat = require('./socketConnection');
 
 
-var webpush = require('web-push');
-var publicVapidKey =
-'BOicPShPoIUBEsP8Lb-lsktiuzNBnpOyMhK798clUAUHHRYSrlcAnuGkJVlLOMYMfdzliHfvDpHZ_bBC7mnyL9Q';
-var privateVapidKey =
-'_vz37LxRRJWigD2ixhoKlXLx2hZo_76j3w6rMLGMZj0';
-
-webpush.setVapidDetails('mailto:test@test.com', publicVapidKey, privateVapidKey);
-
-
 
 // 기업 회원 메인 화면
 router.route('/entMain').get(function(req, res) {
