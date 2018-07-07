@@ -1,0 +1,94 @@
+<% include headerLayout.ejs %>
+<% include headerScript.ejs %>
+<% include bodyLayout.ejs %>
+
+<script>
+ $(function(){
+      $('#dashboard').addClass('active');
+      $('#add').click(function(){
+        location.href="/addDevice";
+      });
+ });
+</script>
+
+
+
+          <!-- 수조에 문제 생겼을 때 경고 -->
+          <div class="container">
+            <div class="row alert__box">
+              <div class="col-md-8 mb-3 alert__contents">
+                <div class="alert__title"><i class="fas fa-exclamation-triangle"></i><strong>수조 이상 정보 알림</strong></div><br>
+                <% if(message.length != 0){ %>
+                <ul class="list-group" id="list-group">
+                  <% for(i=0; i<message.length; i++) { %>
+                    <li class="list-group-item"><%= message[i].device_code %> - <%= message[i].msg %></li>
+                  <% } %>
+                </ul>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+
+
+          <input type="hidden" id="user_email" name="user_email" value="<%=user_email%>"/>
+
+
+          <%  var i = 1; %>
+          <%  var j = 0; %>
+          <% if(msrData) { %>
+          <div class="py-3">
+            <div class="container">
+              <button type="button" id="add" class="btn btn-outline-success" style="float:right;">추가하기</button><br><br>
+              <hr>
+
+              <% msrData.forEach(function(item, index){ %>
+
+                  <% if(i%4 == 1){ %>
+                  <div class="row">
+                  <% } %>
+
+                    <div class="col-md-3">
+                      <div class="card bg-light mb-4">
+                        <div class="card-block">
+                          <div class="card-header"><%= item.device_code %></div>
+                          <div class="card-body">
+                            <!-- <h5 class="card-title"><%= item.deviceName %></h5> -->
+
+                            <p class="card-text">
+                              <h6 name="msrTemp">온도 : <%= item.msrTemp %></h6>
+                              <h6 name="msrPH">PH : <%= item.msrPH %></h6>
+                              <h6 name="msrLED">LED : <%= item.msrLED %></h6>
+                              <h6 name="msrHeater">히터 : <%= item.msrHeater %></h6>
+                              <h6 name="tank_name">수조 이름 : <%=configData[index].tank_name%></h6>
+
+                              <hr>
+
+                              <% speciesData.forEach(function(data, index){ %>
+                                <% if(item.device_code == data.device_code) { %>
+                                  <h6><%=data.species_name%> X <%=data.num%></h6>
+                                <% } %>
+                              <% }); %>
+
+                            </p>
+                            <hr>
+                            <!-- <a href="#" class="card-link"  name="goGraph" id="<%=item.device_code%>">그래프 보기</a> -->
+                            <!-- <a href="/goGraph/<%=item.device_code%>" class="card-link" name="goGraph">그래프 보기</a> -->
+                            <h6 onclick="graphPop('<%=item.device_code%>');" style="cursor:pointer;">그래프 보기</h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  <% if(i%4 == 0){ %>
+                  </div>
+                  <% } %>
+                  <% i = i+1; %>
+              <% }); %>
+
+
+            </div>
+          </div>
+          <% } %>
+
+<% include footerLayout.ejs %>

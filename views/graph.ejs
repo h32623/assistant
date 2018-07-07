@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+		<title>기기 등록</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+		<script src="https://rawgit.com/chartjs/chartjs-plugin-annotation/master/chartjs-plugin-annotation.js"></script>
+
+
+    	<style>
+        	body        { padding-top:80px; padding-bottom: 80px; padding-left:80px; padding-right:80px; }
+
+          .chart {
+            left: 50%;
+            top: 50%;
+          }
+    	</style>
+
+    <script>
+        $(document).ready(function(){
+          var chartData;
+          var tempArr = [];
+          var phArr = [];
+          var timeArr = [];
+          var device_code = $('#device_code').val();
+          var borderColor = [];
+
+          $.ajax({
+            url: '/goGraph',
+            type: 'post',
+            data: {device_code: device_code},
+            success: function(data) {
+							chartData = data;
+              // chartData = JSON.parse(data);
+
+              for(i=0; i<chartData.length; i++){
+                tempArr[i] = chartData[i].msrTemp;
+                phArr[i] = chartData[i].msrPH;
+                timeArr[i] = chartData[i].msrTime.substring(12,19);
+                console.log(tempArr[i] + " " + phArr[i] + " " + timeArr[i]);
+
+                var ctx = document.getElementById("myChart");
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        // labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                        datasets: [{
+                            label: '측정 PH',
+                            data: phArr,
+                            borderColor: [
+                                'rgba(255,99,132,1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }],
+                        labels: timeArr
+                    },
+                    options: {
+												expand: false,
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+																	suggestedMin: 6,
+																	suggestedMax: 10,
+                                  beginAtZero:false
+                                }
+                            }]
+                        },
+												annotation: {
+													annotations: [{
+														type: 'line',
+														mode: 'horizontal',
+														scaleID: 'y-axis-0',
+														value: 5,
+														borderColor: 'rgb(75, 192, 192)',
+														borderWidth: 3,
+														label: {
+															enabled: false,
+															content: 'Test label'
+														}
+													}]
+												}
+                    },
+                });
+              }
+            }
+          });
+
+
+
+
+        });
+    </script>
+
+	</head>
+	<body>
+
+    <input type="hidden" id="device_code" value="<%=device_code%>"/>
+
+		<div class="chart-container" style="position: relative; height:40vh; width:80vw">
+		    <center><canvas id="myChart" class="chart"></canvas></center>
+		</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+
+	</body>
+</html>

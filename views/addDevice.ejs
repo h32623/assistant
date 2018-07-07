@@ -1,0 +1,332 @@
+<% include headerLayout.ejs %>
+<% include headerScript.ejs %>
+
+      <script>
+        $(document).ready(function(){
+
+					var i = 0, j = 0;
+					var speciesArray = [];
+					var temp = [];
+					var itemArray = [];										// 추가한 정보들 전송하기 전에 담아두는 배열
+					var count = 0;
+					var s_count = 0;		// 모달창에서 선택한 값 input 에 추가하기 위한 count 값
+
+					$('#addButton').click(function(e){		// 1) 좌측 하단 '추가' 눌렀을 때
+
+						var device_code = $('#device_code').val();
+						var tank_name = $('#tank_name').val();
+						var width = $('#width').val();
+						var height = $('#height').val();
+						var depth = $('#depth').val();
+						// var species = $('#species').val();
+						// var num = $('#num').val();
+						var tempSet = $('#tempSet').val();
+						var temp_gap = $('#temp_gap').val();
+						var phSet = $('#phSet').val();
+						var ph_gap = $('#ph_gap').val();
+
+						itemArray.push({device_code : device_code , tank_name : tank_name, width : width, height : height, depth : depth , tempSet : tempSet , temp_gap : temp_gap , phSet : phSet , ph_gap : ph_gap });
+
+						var output = '';
+						output += '		<div class="card" id="card_group"><div class="card-body">';
+						output += '   <ul class="list-group" id="list-group">';
+		        output += '		<li class="list-group-item">' + itemArray[i].device_code + '</li>';
+						output += '		<li class="list-group-item">' + itemArray[i].tank_name + '</li>';
+						output += '		<li class="list-group-item">' + itemArray[i].width + 'X' + itemArray[i].height + 'X' + itemArray[i].depth + '</li>';
+
+
+
+						for(k=0; k<temp.length; k++){
+							output += '		<li class="list-group-item">' + speciesArray[k].speciesName + ' ( ' + speciesArray[k].num + ' ) ' + '</li>';
+						}
+
+						output += '		<li class="list-group-item">' + '수온 : ' + itemArray[i].tempSet + ' /  허용 편차 : ' + itemArray[i].temp_gap + '</li>';
+						output += '		<li class="list-group-item">' + 'PH : ' + itemArray[i].phSet + ' /  허용 편차 : ' + itemArray[i].ph_gap + '</li>';
+
+						output += '   </ul>';
+						output += '		</div></div><br>'
+		        $(output).prependTo('#card_block');
+
+						i = i+1;
+
+						alert('추가되었습니다');
+
+						// j = 0;
+						temp.length = 0;
+						s_count = 0;
+
+						$('.form-control').val('');				// 원래 있던 폼 공백처리
+						// $('#speciesDiv').html('<div class="col-md-5 mb-3"><input class="form-control" type="text" name="species" id="species" data-toggle="modal" data-target="#exampleModalCenter"/></div>'
+						// 												+ '<div class="col-md-3 mb-3"><input type="text" class="form-control" name="num" id="num"/></div>'
+						// 												+ '<div class="col-md-1 mb-3"><button type="button" class="btn btn-warning btn-round" id="addSpecies" name="addSpecies" data-toggle="tooltip" data-placement="top" title="추가"><i class="fas fa-plus" style="color:white;"></i></button></div>'
+						// 												+ '<div class="col-md-1 mb-3"><button type="button" class="btn btn-success btn-round" id="finSpecies" name="finSpecies" data-toggle="tooltip" data-placement="top" title="완료"><i class="fas fa-check" style="color:white;"></i></button></div>'
+						// 											);
+						$('#addList').show();							// 우측에 현재까지 추가한 목록 보여주기
+
+					});
+
+
+					// 추가 누르면 -> 입력했던 행 speciesArray에 push 하고 그 다음 칸 만들어줌 -> j++
+					// $('button[name=addSpecies]').click(function(e){
+					$('#addSpecies').click(function(e){
+
+						if($('#species').val() == '' || $('#num').val() == ''){
+							alert('항목을 입력해 주세요');
+							$('#species').focus();
+						}
+						else {
+							var speciesName = $("input[name='species']").eq(count).val();
+							var num = $("input[name='num']").eq(count).val();
+							var device_code = $('#device_code').val();
+
+							speciesArray.push({device_code:device_code, speciesName:speciesName, num:num});
+							temp.push({speciesName:speciesName, num:num});
+
+							var content = '';
+							content += '<div class="col-md-5 mb-3"><input class="form-control" type="text" name="species" id="species" data-toggle="modal" data-target="#exampleModalCenter"/></div>';
+							content += '<div class="col-md-3 mb-3"><input type="text" class="form-control" name="num" id="num"/></div>'
+
+							$(content).appendTo('#speciesDiv');
+
+							j = j+1;
+							count = count+1;
+							console.log(speciesArray);
+							console.log(count);
+						}
+					});
+
+					// 완료 누르면 -> 마지막으로 입력한 행 speciesArray 에 push 함
+					$("button[name='finSpecies']").click(function(e){
+
+						if($('#species').val() == '' || $('#num').val() == ''){
+							alert('항목을 입력해 주세요');
+							$('#species').focus();
+						}
+						else {
+							var speciesName = $("input[name='species']").eq(count).val();
+							var num = $("input[name='num']").eq(count).val();
+							var device_code = $('#device_code').val();
+
+							speciesArray.push({device_code:device_code, speciesName:speciesName, num:num});
+							temp.push({speciesName:speciesName, num:num});
+
+							j = j+1;
+							count = 0;
+
+							alert('어종을 등록했습니다.');
+							console.log(speciesArray);
+							console.log(count);
+						}
+					});
+
+
+
+					$('#register').click(function(e){			// 우측 하단 '등록' 눌렀을 때
+
+							var user_email = $('#user_email').val();
+							// var user_id = $('#user_id').val();
+
+							$.ajax({
+								url: '/register',
+								type: 'post',
+								dataType: 'text',
+								data: {itemArray : JSON.stringify(itemArray), user_email : user_email, speciesArray : JSON.stringify(speciesArray)},
+								success: function(data) {
+									var json = JSON.parse(data);
+									if (json.code == 1) { // 성공시
+										alert('등록되었습니다.');
+                    document.location.href = "http://222.106.254.22:3003/entMain";
+									}
+									else { // 실패시
+										alert("등록에 실패했습니다.");
+									}
+								}
+							});
+					});
+
+
+
+					$('#codeCheck').click(function(e){
+
+						var device_code = $('#device_code').val();
+
+						if(device_code == ''){
+							alert('항목을 입력해 주세요.');
+						}
+
+						else {
+							$.ajax({
+								url: '/codeCheck',
+								type: 'post',
+								dataType: 'text',
+								data: {device_code : device_code},
+								success: function(data) {
+									var json = JSON.parse(data);
+									if (json.code == 1) { 								// 코드 사용 가능한 경우
+										alert('사용 가능한 제품 코드입니다.');
+										// focus 다음 칸으로 옮겨주기
+									}
+									else { 															// 코드 사용 불가능한 경우
+										alert('사용 불가능한 제품 코드입니다.');
+										$('#device_code').val('').focus();
+									}
+								}
+							});
+						}
+
+					});
+
+
+					$('#selectSpecies').click(function(e){
+						var str = "";
+				    $("select option:selected").each(function() {
+				      str += $(this).text() + " ";
+				    });
+						$("input[name='species']").eq(s_count).val(str);
+						$('#closeModal').trigger('click');
+
+						s_count += 1;
+					});
+
+					// $('[data-toggle="tooltip"]').tooltip();
+
+        });		// document.ready
+      </script>
+
+
+			<% include bodyLayout.ejs %>
+
+
+
+		<input type="hidden" id="user_id" value="<%=user.user_id%>"/>
+   	<input type="hidden" id="user_email" value="<%=user.user_email%>"/>
+
+		<!-- ** 기기 및 수조 설정 시 받아야 할 데이터
+
+		1. 제품 번호
+		2. 어항 크기 (가로/세로/높이)
+		3. 어종, 개체수
+		4. 수온 설정값
+		4-2. 수온 편차
+		5. ph 설정값
+		5-2. ph 편차 -->
+
+
+		<div class="container">
+				<div class="row">
+				<div class="col-md-8 order-md-1">
+				    <h1><span class="fa fa-sign-in"></span> 기기 등록</h1>
+				    <!-- 인증 처리 후 메시지가 있으면 메시지 표시 -->
+	          <form id="userid" method="post" action="/addDevicePost">
+				        <div class="form-group">
+				            <label>1. 제품 코드 (미리 제공)</label>																		<!-- id : device_code -->
+										<div class="row">
+										<div class="col-md-4 mb-3"><input class="form-control" type="text" name="device_code" id="device_code"/></div>
+										<button type="button" class="btn btn-warning btn-sm" id="codeCheck">중복 확인</button>
+										</div>
+				        </div>
+								<div class="form-group">
+										<label>2. 수조 이름</label>																		<!-- id : tank_name -->
+										<div class="row">
+										<div class="col-md-4 mb-3"><input class="form-control" type="text" name="tank_name" id="tank_name"/></div>
+										<!-- <button type="button" class="btn btn-warning btn-sm" id="codeCheck">중복 확인</button> -->
+										</div>
+								</div>
+				        <div class="form-group" id="waterTank">
+				            <label>3. 수조 크기</label>
+										<div class="row">																				 <!-- id : width  /  height  /  depth -->
+										<div class="col-md-3 mb-3"><input class="form-control" type="number" name="width" id="width"/></div>
+										<div class="col-md-3 mb-3"><input class="form-control" type="number" name="height" id="height"/></div>
+										<div class="col-md-3 mb-3"><input class="form-control" type="number" name="depth" id="depth"/></div>
+										</div>
+										<small id="waterTankHelper" class="form-text text-muted">수조의 가로/세로/높이 크기를 입력해 주세요.</small>
+								</div>
+	              <div class="form-group" id="speciesGroup">
+	                  <label>4. 어종 / 개체</label>
+										<div class="row" id="speciesDiv">																							<!-- id : species  /  num -->
+											<div class="col-md-5 mb-3"><input class="form-control" type="text" name="species" id="species" data-toggle="modal" data-target="#exampleModalCenter"/></div>
+											<div class="col-md-3 mb-3"><input type="text" class="form-control" name="num" id="num"/></div>
+											<div class="col-md-1 mb-3"><button type="button" class="btn btn-warning btn-round" id="addSpecies" name="addSpecies" data-toggle="tooltip" data-placement="top" title="추가"><i class="fas fa-plus" style="color:white;"></i></button></div>
+											<div class="col-md-1 mb-3"><button type="button" class="btn btn-success btn-round" id="finSpecies" name="finSpecies" data-toggle="tooltip" data-placement="top" title="완료"><i class="fas fa-check" style="color:white;"></i></button></div>
+										</div>
+
+
+										<!-- Modal -->
+										<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+										  <div class="modal-dialog modal-dialog-centered" role="document">
+										    <div class="modal-content">
+										      <div class="modal-header">
+										        <h5 class="modal-title" id="exampleModalCenterTitle">어종 검색</h5>
+										        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										          <span aria-hidden="true">&times;</span>
+										        </button>
+										      </div>
+										      <div class="modal-body">
+														<h6>어종을 검색해주세요.</h6>
+														<select class="custom-select" name="species" id="species">
+														  <!-- <option selected>어종 선택</option> -->
+															<% speciesData.forEach(function(item, index){ %>
+														  	<option value="<%=item.species_code%>"><%=item.species_name%></option>
+															<% }); %>
+														</select>
+										      </div>
+										      <div class="modal-footer">
+										        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeModal">닫기</button>
+										        <button type="button" class="btn btn-primary" id="selectSpecies">선택</button>
+										      </div>
+										    </div>
+										  </div>
+										</div>	<!-- Modal -->
+
+
+
+										<small id="speciesHelper" class="form-text text-muted">어종과 개체를 입력해 주세요.</small>
+	              </div>
+	              <div class="form-group">
+										<div class="row">																					<!-- id : tempSet -->
+				            <div class="col-md-4 mb-3"><label>5. 수온 설정값</label><input type="text" class="form-control" name="tempSet" id="tempSet"></div>
+										<div class="col-md-3 mb-3"><label>5-2. 수온 편차</label><input type="text" class="form-control" name="temp_gap" id="temp_gap"></div>
+										</div>
+				        </div>
+								<div class="form-group">
+										<div class="row">																					<!-- id : tempSet -->
+										<div class="col-md-4 mb-3"><label>6. PH 설정값</label><input type="text" class="form-control" name="phSet" id="phSet"></div>
+										<div class="col-md-3 mb-3"><label>6-2. PH 편차</label><input type="text" class="form-control" name="ph_gap" id="ph_gap"></div>
+										</div>
+								</div>
+	              <!-- *****한번에 등록 가능한 기기 수 / 방법 생각해야 함!!*****  -->
+
+								<button type="button" class="btn btn-warning btn-lg" id="addButton">추가</button>
+				        <!-- <button type="submit" class="btn btn-warning btn-lg">기기 등록</button> -->
+				    </form>
+				    <hr><a href="/login">되돌아가기</a>
+				</div>
+
+				<div class="col-md-4 order-md-2 mb-4" style="display:none;" id="addList" name="addList">
+					<br>
+					<h3><span class="fa fa-sign-in"></span>list</h3><hr>
+					<!-- 사용자가 추가한 정보 들어오는 곳 -->
+					<ul class="list-group" id="list-group">
+
+					</ul>
+
+					<div class="card_block" id="card_block"></div>
+
+
+					<br>
+					<button type="button" class="btn btn-warning btn-lg" id="register">등록</button>
+
+				</div>
+			</div> 	<!-- row -->
+		</div>	<!-- container  -->
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+    <!-- jQuery Custom Scroller CDN -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script> -->
+
+	</body>
+</html>

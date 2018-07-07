@@ -1,0 +1,68 @@
+<script>
+
+    $(document).ready(function(){
+      var email = $('#email').val();
+      var dataArray = [];
+
+      var timeout = setInterval(AjaxCall, 30000);
+
+      // entMsrData 업데이트 값 가져오는 ajax 함수///
+      function AjaxCall() {
+
+        var user_email = $('#user_email').val();
+
+        $.post("/updateData", { user_email: user_email } );
+
+
+        $.ajax({
+          url: '/updateData',
+          type: 'post',
+          data: {user_email: user_email},						// 사용자 식별할 기본키값 (db 쿼리에 필요한)
+          dataType: 'text',
+          success: function(data) {
+            var json = JSON.parse(data);
+            if (json.code == '1') {              // 업데이트 ok.
+              location.href="/entMain";
+            } else {                           // 업데이트 실패했을 경우
+              alert('측정할 데이터가 존재하지 않습니다.\n측정해주세요!!!!!!!!!!!!!!!!!!');
+            }
+          }
+        });
+      }
+
+      $('#searchBox .typeahead').typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+      },
+      {
+        limit: 12,
+        async: true,
+        source: function (query, processSync, processAsync) {
+          clearInterval(timeout);
+          processSync();
+          return $.ajax({
+            url: "http://222.106.254.22:3003/search",
+            type: 'POST',
+            data: {query: query},
+            dataType: 'json',
+            success: function (data) {
+              // in this example, json is simply an array of strings
+              return processAsync(data);
+            }
+          });
+        }
+      });
+
+      // $(".nav-link").click(function(e) {
+      //
+      //    $(".nav-link").removeClass('active');
+      //    var listId = $(this).attr("id");
+      //    $('li[id='+listId+']').addClass('active');
+      //    // $(this).addClass('active');
+      // });
+
+
+    });
+
+</script>

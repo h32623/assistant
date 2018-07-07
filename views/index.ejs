@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8" />
+ <title>register</title>
+ <script src="~/register/app.js"></script>
+ <link rel="stylesheet" href="css/mycss.css"/>
+</head>
+
+<body>
+ <h1>회원가입</h1>
+ <br>
+ <form id="userid" method="post" action="/reg_receiver">
+   <table class=".contents-box">
+     <tr>
+     <td>email 계정</td>
+     <td><input name="emailId" placeholder="ratatouille" /></td>
+     <td>@</td><td><input name="domain" placeholder="example.com" /></td>
+     </tr>
+     <tr>
+         <td>비밀번호</td>
+         <td><input name="password" placeholder="*****" /></td>
+     </tr>
+     <tr>
+         <td>이름</td>
+         <td><input name="name" placeholder="라따뚜이" /></td>
+     </tr>
+    <tr>
+      <td>
+        <button id="done" value="Done" name="done">DONE </button>
+      </td>
+    </tr>
+  </table>
+ </form>
+</body>
+</html>
+

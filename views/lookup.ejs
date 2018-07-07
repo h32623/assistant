@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+
+		<title>프로필 화면</title>
+
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+			<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+    	<style>
+        	body        { padding-top:80px; }
+    	</style>
+
+			<script>
+
+
+			$(document).ready(function(){
+
+        var email = $('#email').val();
+				AjaxCall();
+
+				function AjaxCall() {
+					$.ajax({
+						url: '/updatePH',
+						type: 'post',
+						data: {email: email},						// 사용자 식별할 기본키값 (db 쿼리에 필요한)
+						dataType: 'text',
+						success: function(data) {
+							var json = JSON.parse(data);
+							if (json.code == 1) { // 성공시
+								$('#PH').html(json.msrPH);
+                $('#deviceNum').html(json.deviceNum);
+								$('#nowDate').html(new Date());
+							} else { // 실패시
+								alert("정보를 받아오지 못했습니다.");
+							}
+						}
+					}).then(function(){
+						setTimeout(AjaxCall, 900000);				// 15분에 한 번씩 호출!
+					});
+				}
+
+
+			});
+
+
+			</script>
+	</head>
+	<body>
+
+		<div class="container">
+			<div class="page-header text-center">
+	        <h1><span class="fa fa-book"></span> 사용자 프로필</h1>
+	        <a href="/logout" class="btn btn-default btn-sm">로그아웃</a>
+		  </div>
+			<br>
+		  <div class="row">
+          <div class="col-sm-6">
+              <div class="well">
+
+  	                <h3><span class="fa fa-user"></span> 사용자 프로필</h3><br>
+          					<p>
+                      <input type="hidden" value="<%=user.user_email%>" name="email" id="email"/>
+          						<strong>이메일</strong>: <%= user.user_email %><br><br>
+											<strong>PH</strong>: <div id="PH"></div>
+                      <strong>device 번호</strong>: <div id="deviceNum"></div>
+											<strong>최종 업데이트 시각</strong>: <div id="nowDate"></div>
+          	        </p>
+
+
+  				<br>
+              </div>
+          </div>
+
+		    </div>
+
+		</div>
+
+	</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+		<title>회원가입</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" href="stylesheets/entMain.css">
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+    	<style>
+        	body        { padding-top:80px; }
+    	</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="col-sm-6 col-sm-offset-3">
+			    <h1><span class="fa fa-sign-in"></span> 회원가입</h1>
+			    <!-- 인증 처리 후 메시지가 있으면 메시지 표시 -->
+			    <% if (message.length > 0) { %>
+			        <div class="alert alert-danger"><%= message %></div>
+			    <% } %>
+          <form id="userid" method="post" action="/signup">
+
+
+			        <div class="form-group">
+			            <label>아이디</label>
+			            <input class="form-control" type="text" name="id_email" id="id_email"/>
+			        </div>
+			        <div class="form-group">
+			            <label>비밀번호</label>
+			            <input type="password" class="form-control" name="password">
+			        </div>
+              <div class="form-group">
+                  <label>기업명</label>
+                  <input type="text" class="form-control" name="entName">
+              </div>
+							<div class="form-group">
+                  <label>주소</label>
+                  <input type="text" class="form-control" name="address">
+              </div>
+              <!-- *****기업 회원 가입이기 때문에 검증 절차 / 인증 방법 필요할 것 같음!!*****  -->
+
+			        <button type="submit" class="btn btn-warning btn-lg">회원가입</button>
+			    </form>
+
+			    <hr>
+
+			    <p>이미 계정이 있으신가요? <a href="/login">로그인하기</a></p>
+			    <p><a href="/">홈으로</a></p>
+
+			</div>
+
+		</div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+    <!-- jQuery Custom Scroller CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,549 @@
+var app       =     require("express")();
+var mysql     =     require("mysql");
+var http      =     require('http').Server(app);
+var io        =     require("socket.io")(http);
+var mysql = require('mysql');
+var EventEmitter = require('events').EventEmitter;
+var emitter = new EventEmitter();
+var pool = mysql.createPool({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'hy5643212',
+  database : 'FISH',
+  connectionLimit : 50
+});
+
+module.exports = function(router, passport) {
+    console.log('user_passport 호출됨.');
+
+    // 홈 화면
+    router.route('/').get(function(req, res) {
+        console.log('user_passport에서 받음');
+        console.log('/ 패스 요청됨.');
+
+        console.log('req.user의 정보');
+        console.dir(req.user);
+
+        // 인증 안된 경우
+        if (!req.user) {
+            console.log('사용자 인증 안된 상태임.');
+            res.render('login.ejs', {login_success:false});
+        } else {
+            console.log('사용자 인증된 상태임.');
+            res.render('profile.ejs', {login_success:true});
+        }
+    });
+
+
+
+    // 회원 로그인 화면
+    router.route('/login').get(function(req, res) {
+        console.log('/login get 패스 요청됨.');
+        res.render('login.ejs', {message: req.flash('loginMessage')});
+    });
+
+    // // 개인 회원 로그인 인증
+    // router.route('/loginPost').post(passport.authenticate('local-login', {
+    //     successRedirect : '/entMain',
+    //     failureRedirect : '/login',
+    //     failureFlash : true
+    // }));
+
+    // 개인 회원 로그인 인증
+    router.route('/loginPost').post(passport.authenticate('local-login'
+    , {failureRedirect : '/login', failureFlash : true})
+    , function(req, res){
+      if(req.user.user_type == 'ent')
+        // res.render('entMain.ejs');
+        res.redirect('/entMain');
+      else {
+        // res.render('profile.ejs');
+        res.redirect('/profile');
+      }
+    });
+
+
+
+
+
+
+    // 기업 회원 로그인 인증
+    router.route('/entLoginPost').post(passport.authenticate('local-login', {
+        successRedirect : '/entMain',
+        failureRedirect : '/login',
+        failureFlash : true
+    }));
+
+
+
+    // 회원가입 화면
+    router.route('/signup').get(function(req, res) {
+        console.log('/signup get 패스 요청됨.');
+        res.render('signup.ejs', {message: req.flash('signupMessage')});
+    });
+
+    // 회원가입 요청
+    router.route('/signup').post(passport.authenticate('local-signup', {
+        successRedirect : '/login',
+        failureRedirect : '/signup',
+        failureFlash : true
+    }));
+
+
+
+
+
+
+    // 프로필 화면
+    router.route('/profile').get(function(req, res) {
+        console.log('/profile 패스 요청됨.');
+
+        // 인증된 경우, req.user 객체에 사용자 정보 있으며, 인증안된 경우 req.user는 false값임
+        console.log('req.user 객체의 값');
+        console.dir(req.user);
+
+        // 인증 안된 경우
+        if (!req.user) {
+            console.log('사용자 인증 안된 상태임.');
+            res.redirect('/');
+        } else {
+            console.log('사용자 인증된 상태임.');
+            console.log('/profile 패스 요청됨.');
+
+            if (Array.isArray(req.user)) {
+                res.render('profile.ejs', {user: req.user[0]._doc});
+            } else {
+                res.render('profile.ejs', {user: req.user});
+            }
+        }
+    });
+
+    // 로그아웃
+    router.route('/logout').get(function(req, res) {
+        console.log('/logout 패스 요청됨.');
+        req.logout();
+        res.redirect('/login');
+    });
+
+
+
+
+
+
+    // 회원가입 인증
+    router.route('/signup').post(passport.authenticate('local-signup', {
+        successRedirect : '/signup',
+        failureRedirect : '/login',
+        failureFlash : true
+    }));
+
+
+    // 로그인 처리 후 15분마다 PH 업데이트
+    // router.post('/updatePH', function(req, res){
+    //   var item= {};
+    //
+    //   var email = req.body.email;
+    //   console.log('받은 email 값 : ' + email);
+    //
+    //   var resultCode = "0";// 상태코드: 1(성공), 0(실패)
+    //
+    //   // ******************** 여기 수정해야 함!!!!!!!!!!!!!!! ***********************
+    //   var select_query = 'select deviceData.deviceNum, msrPH from deviceData, device_user where user_email=? and deviceData.deviceNum = device_user.deviceNum;';
+    //
+    //   pool.getConnection(function(err, conn){
+    //     conn.query(select_query, [email], function(err, rows){
+    //       if(err) console.log(err.message);
+    //       else{
+    //
+    //         if(!rows[0]){                // 사용자 정보와 일치하는 device 가 없을 때
+    //           item.code = resultCode;
+    //         }
+    //
+    //         else{                     // 사용자 정보와 일치하는 device 가 있을 때
+    //           console.log(rows);
+    //           console.log(rows[0].msrPH+" | "+rows[0].deviceNum);
+    //
+    //           // deivce ph값 받아서   새로 저장하기
+    //
+    //
+    //           // 응답코드 생성
+    //           resultCode = "1";
+    //           item.msrPH = rows[0].msrPH;
+    //           item.deviceNum = rows[0].deviceNum;
+    //           item.code = resultCode;
+    //         }
+    //       }
+    //       res.end(JSON.stringify(item));
+    //       conn.release();
+    //     });
+    //   });
+    // });
+
+
+
+    // 기업 회원 메인 화면
+    router.route('/entMain').get(function(req, res) {
+        console.log('/entMain 패스 요청됨.');
+
+        // 인증된 경우, req.user 객체에 사용자 정보 있으며, 인증안된 경우 req.user는 false값임
+        console.log('req.user 객체의 값');
+        console.dir(req.user);
+
+        // 인증 안된 경우
+        if (!req.user) {
+            console.log('사용자 인증 안된 상태임.');
+            res.redirect('/');
+        } else {
+            console.log('사용자 인증된 상태임.');
+            console.log('/entMain 패스 요청됨.');
+
+
+            var user_email = req.user.user_email;
+            var checkAll = 'select * from entMsrData where device_code in (select device_code from user_device where user_email = ? )';        // 등록한 기기가 있는지 확인 -> 있으면 entDeviceData 값들 반환 / 없으면 null
+            var valueCheck = 'select * from entDeviceData where device_code in (select device_code from user_device where user_email = ? )';
+
+            var message = [];
+
+
+
+            pool.getConnection(function(err, conn){
+              conn.query(valueCheck, [user_email], function(err, results){           // entDeviceData 조회 (등록된 기기 있는지 없는지)
+
+                if(!results[0]){    // 등록된 수조 및 기기 정보 없는 경우
+                  console.log('데이터 없음, 기기 등록 페이지로 이동');
+                  res.redirect('/addDevice');
+                }
+
+                else{               // 등록된 수조 및 기기 정보 있는 경우
+                  conn.query(checkAll, [user_email], function(err, rows){      // entMsrData  조회  (측정된 데이터 있는지 없는지)
+                    if(!rows[0]){
+                      console.log('아직 측정된 데이터 값 없음');
+                      message.push({msg : '아직 측정 안됐어요!!!!!!!!!!측정해주세요!!!!!!!!!!!!!!'});
+                      res.render('entMain.ejs', {user_email : user_email, message: message, msrData : 0});
+                    }
+                    else{
+                      for(i=0; i<rows.length; i++){
+                          if(rows[i].msrPH < results[i].ph_value - results[i].ph_dev || rows[i].msrPH > results[i].ph_value + results[i].ph_dev){
+                            console.log('ph 기준 범위값을 벗어남');
+                            var device_code = rows[i].device_code;
+                            message.push({device_code : device_code , msg : 'ph 기준 범위값을 벗어남'});
+                          }
+
+                          if(rows[i].msrTemp < results[i].temp_value - results[i].temp_dev || rows[i].msrTemp > results[i].temp_value + results[i].temp_dev){
+                            console.log('온도 기준 범위값을 벗어남');
+                            var device_code = rows[i].device_code;
+                            message.push({device_code : device_code , msg : '온도 기준 범위값을 벗어남'});
+                          }
+                      }
+
+                      console.log('메시지 갯수 : ' + message.length);
+                      if(message.length == 0){
+                        console.log('수조 이상 없음');
+                        res.render('entMain.ejs', {user_email : user_email , msrData: rows, configData: results, message: message});
+                      }
+                      else{
+                        console.log('수조 이상 있음');
+                        res.render('entMain.ejs', {user_email : user_email , msrData: rows, configData: results, message: message});
+                      }
+
+                    }
+                  });
+                }
+
+              });
+            });
+
+
+
+
+
+
+
+
+            // pool.getConnection(function(err, conn){
+            //
+            //       conn.query(checkAll, [user_email], function(err, results){
+            //
+            //         if(!results[0]){        // 등록된 수조 정보가 없으면
+            //             console.log('데이터 없음, 기기 등록 페이지로 이동');
+            //             res.redirect('/addDevice');
+            //         } else{                   // 등록된 수조 정보가 있으면 -> 해당 사용자의  entMsrData 값들 반환됨
+            //             conn.query(viewAll, [user_id], function(err, rows){
+            //                 console.log('성공적으로 조회');
+            //                 // console.log('rows.length : ' + rows.length);
+            //
+            //                 if(!rows[0]){
+            //                   console.log('아직 측정된 데이터 값 없음');
+            //                 }
+            //
+            //
+            //                 for(i=0; i<rows.length; i++){
+            //
+            //
+            //                       if(rows[i].msrPH < results[i].ph_value - results[i].ph_dev || rows[i].msrPH > results[i].ph_value + results[i].ph_dev){
+            //                         console.log('ph 기준 범위값을 벗어남');
+            //                         var device_code = rows[i].device_code;
+            //                         message.push({device_code : device_code , msg : 'ph 기준 범위값을 벗어남'});
+            //                         // message[i].ph = 'ph 기준 범위값을 벗어남';
+            //                       }
+            //
+            //                       if(rows[i].msrTemp < results[i].temp_value - results[i].temp_dev || rows[i].msrTemp > results[i].temp_value + results[i].temp_dev){
+            //                         console.log('온도 기준 범위값을 벗어남');
+            //                         var device_code = rows[i].device_code;
+            //                         message.push({device_code : device_code , msg : '온도 기준 범위값을 벗어남'});
+            //                         // message[i].temp = '온도 기준 범위값을 벗어남';
+            //                       }
+            //
+            //
+            //
+            //
+            //                 }
+            //
+            //
+            //
+            //                 // if(rows[0].msrPH < results[0].ph_value - results[0].ph_dev || rows[0].msrPH > results[0].ph_value + results[0].ph_dev){
+            //                 //   console.log('ph 기준 범위값을 벗어남');
+            //                 //   message.ph = 'ph 기준 범위값을 벗어남';
+            //                 // }
+            //                 //
+            //                 // if(rows[0].msrTemp < results[0].temp_value - results[0].temp_dev || rows[0].msrTemp > results[0].temp_value + results[0].temp_dev){
+            //                 //   console.log('온도 기준 범위값을 벗어남');
+            //                 //   message.temp = '온도 기준 범위값을 벗어남';
+            //                 // }
+            //
+            //
+            //
+            //
+            //
+            //
+            //
+            //                 console.log('메시지 갯수 : ' + message.length);
+            //                 if(message.length == 0){
+            //                   console.log('수조 이상 없음');
+            //                   res.render('entMain.ejs', {msrData: rows, configData: results, message: message});
+            //                 }
+            //                 else{
+            //                   console.log('수조 이상 있음');
+            //                   res.render('entMain.ejs', {msrData: rows, configData: results, message: message});
+            //                 }
+            //             });
+            //         }
+            //
+            //       });
+            //
+            // });
+
+
+
+
+
+
+
+
+            ////////////////////////////
+
+                        // io.on('connection',function(socket){
+                        //     console.log("entDeviceData DB 정보가 업데이트됨");
+                        //     socket.on('status added',function(user_id){              // on : 여기서 받는 소켓 정보는 user_id / user_email 정보.
+                        //       add_status(user_id, function(res){                      //      받아서 해당 유저가 가진 수조 db가 업데이트 되었는지 확인하는 과정 필요.
+                        //         if(res){
+                        //             io.emit('refresh feed', res);
+                        //         } else {
+                        //             io.emit('error');
+                        //         }
+                        //       });
+                        //     });
+                        // });
+                        //
+                        // var add_status = function (user_id, callback) {
+                        //     pool.getConnection(function(err,connection){
+                        //         if (err) {
+                        //           callback(false);
+                        //           return;
+                        //         }
+                        //     connection.query("INSERT INTO `status` (`s_text`) VALUES ('"+status+"')",function(err,rows){
+                        //     // connection.query("INSERT INTO `status` (`s_text`) VALUES ('"+status+"')",function(err,rows){
+                        //             connection.release();
+                        //             if(!err) {
+                        //               callback(true);
+                        //             }
+                        //         });
+                        //      connection.on('error', function(err) {
+                        //               callback(false);
+                        //               return;
+                        //         });
+                        //     });
+                        // }
+
+            ///////////////////////////////
+
+
+
+
+
+
+
+        } // else문 끝
+    });
+
+
+
+    // 기기 등록 화면
+    router.route('/addDevice').get(function(req, res) {
+        console.log('/addDevice get 패스 요청됨.');
+        res.render('addDevice.ejs', {user: req.user});
+    });
+
+    // 기기 등록
+    router.route('/register').post(function(req, res) {
+        console.log('/register post 패스 요청됨.');
+
+        var user_email = req.body.user_email;
+        var obj = JSON.parse(req.body.itemArray);
+        console.log('객체(배열) 길이 : ' + obj.length);
+        console.log(obj[0].device_code);
+        console.log('----------이 위로 device_code 파싱');
+
+        var resultCode = "0";
+        var item= {};
+
+        // ****** 1) user_deviceQuery : user_device 테이블에 user_email, device_code 등록하는 쿼리
+        // ****** 2) regDeviceQuery : entDeviceData 테이블에 기타 수조 정보 등록하는 쿼리
+        // ****** 3) regSpeciesQuery : user_species 테이블에 user_email, species_code 등록하는 쿼리
+        var user_deviceQuery = 'INSERT INTO user_device (user_email, device_code) VALUES (?, ?)';
+        var regDeviceQuery = 'INSERT INTO entDeviceData (device_code, tank_name, width_size, height_size, depth_size, species_name, temp_value, temp_dev, ph_value, ph_dev) VALUES (?,?,?,?,?,?,?,?,?,?)';
+        var regSpeciesQuery = 'INSERT INTO user_species (user_email, species_code) VALUES (?, ?)';
+
+
+        pool.getConnection(function(err, conn){
+          for (var i = 0; i < obj.length; i++) {
+            var device_code = obj[i].device_code;
+            conn.query(regDeviceQuery, [obj[i].device_code, obj[i].tank_name, obj[i].width, obj[i].height, obj[i].depth, obj[i].species, obj[i].tempSet, obj[i].temp_gap, obj[i].phSet, obj[i].ph_gap], function(err, results){
+
+              if(err){
+                console.log(err.message);
+              }
+
+              conn.query(user_deviceQuery, [user_email, device_code], function(err, rows){
+                if(err){
+                  console.log(err.message);
+                }
+                console.log('addDevice - ' + user_email + '의 수조 정보 등록 완료');
+                resultCode = "1";
+                item.code = resultCode;
+                res.end(JSON.stringify(item));
+              });
+            });
+          }
+        });
+
+
+
+    });
+
+
+    // 로그인 처리 후 15분마다 PH 업데이트
+    router.post('/updateData', function(req, res){
+      var resultCode = "0";
+      var item = {};
+      var user_email = req.body.user_email;
+
+      var select_query = 'select * from entMsrData where device_code in (select device_code from user_device where user_email = ? )';
+
+      pool.getConnection(function(err, conn){
+        conn.query(select_query, [user_email], function(err, rows){
+          if(err) console.log(err.message);
+          else{
+
+            if(!rows[0]){                // 사용자 정보와 일치하는 device 가 없을 때
+              item.code = resultCode;
+              console.log('아직 측정 데이터가 존재하지 않습니다.');
+            }
+            else{                     // 사용자 정보와 일치하는 device 가 있을 때
+              console.log(rows);
+              console.log('측정 데이터가 존재합니다.');
+              // 응답코드 생성
+              resultCode = "1";
+              item.code = resultCode;
+            }
+
+            res.end(JSON.stringify(item));
+          }
+          // res.render('entMain.ejs', {data: rows});
+          conn.release();
+        });
+      });
+    });
+
+
+
+    router.route('/codeCheck').post(function(req, res) {
+      console.log('/codeCheck 디바이스 코드 중복체크');
+
+      var device_code = req.body.device_code;
+      console.log('device_code : ' + device_code);
+
+      var resultCode = "0";
+      var item= {};
+      var select_query = 'select * from entDeviceData where device_code = ?';
+
+      pool.getConnection(function(err, conn){
+        conn.query(select_query, [device_code], function(err, rows){
+          if(err) console.log(err.message);
+          else{
+
+            if(!rows[0]){                // 사용자 정보와 일치하는 device_code 가 없을 때 (해당 코드 사용 가능)
+              resultCode = "1";
+              item.code = resultCode;
+            }
+
+            else{                     // 사용자 정보와 일치하는 device_code 가 있을 때 (해당 코드 사용 불가능)
+              item.code = resultCode;
+            }
+          }
+          res.end(JSON.stringify(item));
+          // conn.release();
+        });
+      });
+    });
+
+
+
+    router.post('/search', function(req, res){
+
+      console.log('/search 호출됨');
+
+      var query = req.body.query;
+      console.log('query : ' + query);
+
+      var searchQuery = 'SELECT device_code from entDeviceData where device_code like "%'+query+'%"';
+      pool.getConnection(function(err, conn){
+        conn.query(searchQuery, function(err, rows){
+          var data = new Array();
+          if(err) console.log(err.message);
+          else{
+
+            console.log('rows : ' + rows.device_code);
+            console.log('rows[0] : ' + rows[0].device_code);
+
+            if(!rows[0]){                // 사용자 정보와 일치하는 device_code 가 없을 때 (해당 코드 사용 가능)
+              console.log('출력할 데이터 없음');
+            }
+
+            else{                     // 사용자 정보와 일치하는 device_code 가 있을 때 (해당 코드 사용 불가능)
+              for(i=0; i<rows.length; i++){
+                data.push(rows[i].device_code);
+              }
+              console.log(data);
+            }
+          }
+          res.end(JSON.stringify(data));
+          // conn.release();
+        });
+      });
+    });
+
+
+
+
+};
